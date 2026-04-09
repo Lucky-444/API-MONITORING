@@ -13,7 +13,19 @@ const clientSchema = new mongoose.Schema(
       minlength: 2,
       maxlength: 100,
     },
+    /**
+     * best practice for multi-tenant applications to have a unique slug/identifier for each client
+     * const slug = name
+         .toLowerCase()
+         .replace(/ /g, "-")
+         .replace(/[^a-z0-9-]/g, "");
+     * Auto-generate slug from name if not provided
+     * slug = clean name used to identify a client in your API system and URLs. It should be unique, lowercase, and URL-friendly (no spaces or special characters).
+     * Example: "Acme Corporation" -> "acme-corporation"
+     * This slug can be used in API keys and URLs to associate resources with the correct client.
+     */
     slug: {
+      //slug is a URL-friendly identifier for the client, used in API keys and URLs
       type: String,
       required: true,
       unique: true,
