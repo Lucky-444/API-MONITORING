@@ -19,7 +19,7 @@ class PostgresConnection {
         password: config.postgres.password,
         max: 20,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 2000,
+        connectionTimeoutMillis: 2000,//paralely 20 connection can run and if 20 connection is already running then it will wait for 2 second and if connection is not available then it will throw error
       });
 
       this.pool.on("error", (err) => {
