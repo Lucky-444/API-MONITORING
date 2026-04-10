@@ -8,7 +8,7 @@ import logger from "../../../shared/config/logger.js";
  */
 class MongoUserRepository extends BaseRepository {
   constructor() {
-    super(User);
+    super(User);//call the constructor of the BaseRepository class and pass the User model to it, allowing the MongoUserRepository to use the User model for database operations.
   }
 
   /**
@@ -16,6 +16,10 @@ class MongoUserRepository extends BaseRepository {
    * @param {Object} userData - The data of the user to be created.
    * @returns {Promise<Object>} - Returns the created user object.
    */
+
+  //After that the create method is implemented, it checks if the user being created has the role of "super_admin" and if they do not have permissions defined, it assigns them a default set of permissions that allow them to create API keys, manage users, view analytics, and export data. This ensures that super admin users have the necessary permissions to perform their administrative tasks without requiring explicit permission settings during user creation.
+
+  
   async create(userData) {
     try {
       let data = { ...userData };
