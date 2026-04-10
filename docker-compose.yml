@@ -66,12 +66,58 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-networks:
-  api-monitoring-network:
-    driver: bridge
+  api-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api-monitoring-app
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      # MongoDB (local container)
+      MONGO_URI: mongodb://admin:password@mongodb:27017/api_monitoring?authSource=admin
+      MONGO_DB_NAME: api_monitoring
+      # PostgreSQL (Docker container)
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_DATABASE: api_monitoring
+      PG_USER: postgres
+      PG_PASSWORD: ${POSTGRES_PASSWORD}
+      # RabbitMQ (Docker container)
+      RABBITMQ_URL: amqp://admin:strongpassword@rabbitmq:5672/
+      RABBITMQ_QUEUE: api_hits
+      # Security
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: 24h
+      # Rate Limiting
+      RATE_LIMIT_WINDOW_MS: 60000
+      RATE_LIMIT_MAX_REQUESTS: 100
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - api-monitoring-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   postgres_data:
-  mongo_data:
+    driver: local
   rabbitmq_data:
+    driver: local
+  mongo_data:
+    driver: local
   pgadmin_data:
+    driver: local
+
+networks:
+  api-monitoring-network:
+    driver: bridge

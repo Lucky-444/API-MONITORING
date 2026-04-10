@@ -103,6 +103,9 @@ async function startServer() {
       logger.info(`API available at: http://localhost:${config.port}`);
     });
 
+
+    //Server shutdown handling
+    //Close all connections gracefully when process receives termination signals
     const gracefulShutdown = async (signal) => {
       logger.info(`${signal} received, shutting down gracefully...`);
 
