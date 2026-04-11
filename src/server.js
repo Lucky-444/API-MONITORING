@@ -8,6 +8,11 @@ import postgres from "./shared/config/postgres.js";
 import rabbitmq from "./shared/config/rabbitmq.js";
 import errorHandler from "./shared/middlewares/errorHandler.js";
 import ResponseFormatter from "./shared/utils/responseFormatter.js";
+import cookieParser from "cookie-parser";
+
+// Routers
+import authRouter from "./services/auth/routes/authRouter.js";
+import clientRouter from "./services/client/routes/clientRoutes.js";
 
 /**
  * Initialize Express app
@@ -18,10 +23,20 @@ const app = express();
  * Middlewares
  */
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/**
+ * Request logging middleware
+ * Logs the HTTP method, path, IP address, and user agent for each incoming request.
+ */
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path}`, {
     ip: req.ip,
@@ -46,7 +61,11 @@ app.get("/health", (req, res) => {
   );
 });
 
-app.use("/", (req, res) => {
+/**
+ * Root endpoint
+ * Provides basic information about the API service and available endpoints.
+ */
+app.get("/", (req, res) => {
   res.status(200).json(
     ResponseFormatter.success(
       {
@@ -65,6 +84,12 @@ app.use("/", (req, res) => {
 });
 
 /**
+ * API Routes
+ */
+app.use("/api/auth", authRouter);
+app.use("/api", clientRouter);
+
+/**
  * 404 Handler
  */
 app.use((req, res) => {
@@ -73,6 +98,9 @@ app.use((req, res) => {
 
 app.use(errorHandler);
 
+/**
+ * Initialize database connections and start the server
+ */
 async function initializeConnection() {
   try {
     logger.info("Initializing database connections...");
@@ -93,6 +121,12 @@ async function initializeConnection() {
   }
 }
 
+/**
+ * Start the Express server after establishing database connections.
+ * Also sets up graceful shutdown handlers for SIGINT and SIGTERM signals.
+ * On shutdown, it closes the HTTP server and all database connections before exiting the process.
+ * If any error occurs during startup or shutdown, it logs the error and exits with a non-zero status code.
+ */
 async function startServer() {
   try {
     await initializeConnection();
@@ -103,9 +137,6 @@ async function startServer() {
       logger.info(`API available at: http://localhost:${config.port}`);
     });
 
-
-    //Server shutdown handling
-    //Close all connections gracefully when process receives termination signals
     const gracefulShutdown = async (signal) => {
       logger.info(`${signal} received, shutting down gracefully...`);
 

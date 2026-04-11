@@ -4,15 +4,7 @@ import mongoose from "mongoose";
  * MongoDB schema for clients/organizations
  * Each client represents a business/organization using the monitoring service
  */
-const clientSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-      minlength: 2,
-      maxlength: 100,
-    },
+
     /**
      * best practice for multi-tenant applications to have a unique slug/identifier for each client
      * const slug = name
@@ -24,8 +16,16 @@ const clientSchema = new mongoose.Schema(
      * Example: "Acme Corporation" -> "acme-corporation"
      * This slug can be used in API keys and URLs to associate resources with the correct client.
      */
+const clientSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 100,
+    },
     slug: {
-      //slug is a URL-friendly identifier for the client, used in API keys and URLs
       type: String,
       required: true,
       unique: true,

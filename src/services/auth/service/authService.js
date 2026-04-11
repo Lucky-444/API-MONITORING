@@ -3,6 +3,7 @@ import AppError from "../../../shared/utils/AppError.js";
 import jwt from "jsonwebtoken";
 import logger from "../../../shared/config/logger.js";
 import bcrypt from "bcryptjs";
+import { APPLICATION_ROLES } from "../../../shared/constants/roles.js";
 
 /**
  * AuthService handles user authentication and authorization related operations such as onboarding super admin, user registration, login, and fetching user profile.
@@ -181,5 +182,16 @@ export class AuthService {
       logger.error("Error getting user profile:", error);
       throw error;
     }
+  }
+
+  async checkSuperAdminPermissions(userId) {
+    try {
+      const user = await this.userRepository.findById(userId);
+      if (!user) {
+        throw new AppError("User not found", 404);
+      }
+
+      return user.role === APPLICATION_ROLES.SUPER_ADMIN;
+    } catch (error) {}
   }
 }
